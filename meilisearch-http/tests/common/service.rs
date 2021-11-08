@@ -7,6 +7,7 @@ use meilisearch_http::{analytics, create_app, Opt};
 pub struct Service {
     pub meilisearch: MeiliSearch,
     pub options: Opt,
+    pub api_key: Option<String>,
 }
 
 impl Service {
@@ -19,10 +20,11 @@ impl Service {
         ))
         .await;
 
-        let req = test::TestRequest::post()
-            .uri(url.as_ref())
-            .set_json(&body)
-            .to_request();
+        let mut req = test::TestRequest::post().uri(url.as_ref()).set_json(&body);
+        if let Some(api_key) = &self.api_key {
+            req = req.insert_header(("X-MEILI-API-KEY", api_key.clone()));
+        }
+        let req = req.to_request();
         let res = test::call_service(&app, req).await;
         let status_code = res.status();
 
@@ -45,11 +47,14 @@ impl Service {
         ))
         .await;
 
-        let req = test::TestRequest::post()
+        let mut req = test::TestRequest::post()
             .uri(url.as_ref())
             .set_payload(body.as_ref().to_string())
-            .insert_header(("content-type", "application/json"))
-            .to_request();
+            .insert_header(("content-type", "application/json"));
+        if let Some(api_key) = &self.api_key {
+            req = req.insert_header(("X-MEILI-API-KEY", api_key.clone()));
+        }
+        let req = req.to_request();
         let res = test::call_service(&app, req).await;
         let status_code = res.status();
 
@@ -67,7 +72,11 @@ impl Service {
         ))
         .await;
 
-        let req = test::TestRequest::get().uri(url.as_ref()).to_request();
+        let mut req = test::TestRequest::get().uri(url.as_ref());
+        if let Some(api_key) = &self.api_key {
+            req = req.insert_header(("X-MEILI-API-KEY", api_key.clone()));
+        }
+        let req = req.to_request();
         let res = test::call_service(&app, req).await;
         let status_code = res.status();
 
@@ -85,10 +94,11 @@ impl Service {
         ))
         .await;
 
-        let req = test::TestRequest::put()
-            .uri(url.as_ref())
-            .set_json(&body)
-            .to_request();
+        let mut req = test::TestRequest::put().uri(url.as_ref()).set_json(&body);
+        if let Some(api_key) = &self.api_key {
+            req = req.insert_header(("X-MEILI-API-KEY", api_key.clone()));
+        }
+        let req = req.to_request();
         let res = test::call_service(&app, req).await;
         let status_code = res.status();
 
@@ -106,7 +116,11 @@ impl Service {
         ))
         .await;
 
-        let req = test::TestRequest::delete().uri(url.as_ref()).to_request();
+        let mut req = test::TestRequest::delete().uri(url.as_ref());
+        if let Some(api_key) = &self.api_key {
+            req = req.insert_header(("X-MEILI-API-KEY", api_key.clone()));
+        }
+        let req = req.to_request();
         let res = test::call_service(&app, req).await;
         let status_code = res.status();
 

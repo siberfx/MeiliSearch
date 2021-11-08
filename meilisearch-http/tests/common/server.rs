@@ -38,6 +38,7 @@ impl Server {
         let service = Service {
             meilisearch,
             options,
+            api_key: None,
         };
 
         Server {
@@ -51,6 +52,7 @@ impl Server {
         let service = Service {
             meilisearch,
             options,
+            api_key: None,
         };
 
         Server {
