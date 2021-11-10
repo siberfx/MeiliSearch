@@ -1675,6 +1675,7 @@ dependencies = [
  "indexmap",
  "itertools",
  "log",
+ "maplit",
  "meilisearch-error",
  "meilisearch-lib",
  "meilisearch-tokenizer",

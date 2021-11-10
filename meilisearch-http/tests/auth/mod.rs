@@ -1,9 +1,10 @@
 mod api_keys;
+mod authorization;
 mod payload;
 
 use crate::common::Server;
 use actix_web::http::StatusCode;
-use serde_json::Value;
+use serde_json::{json, Value};
 
 impl Server {
     pub async fn new_auth() -> Self {
@@ -34,7 +35,7 @@ impl Server {
 
     pub async fn patch_api_key(&self, key: impl AsRef<str>, content: Value) -> (Value, StatusCode) {
         let url = format!("/keys/{}", key.as_ref());
-        self.service.put(url, content).await
+        self.service.patch(url, content).await
     }
 
     pub async fn list_api_keys(&self) -> (Value, StatusCode) {
@@ -45,5 +46,20 @@ impl Server {
     pub async fn delete_api_key(&self, key: impl AsRef<str>) -> (Value, StatusCode) {
         let url = format!("/keys/{}", key.as_ref());
         self.service.delete(url).await
+    }
+
+    pub async fn dummy_request(
+        &self,
+        method: impl AsRef<str>,
+        url: impl AsRef<str>,
+    ) -> (Value, StatusCode) {
+        match method.as_ref() {
+            "POST" => self.service.post(url, json!({})).await,
+            "PUT" => self.service.put(url, json!({})).await,
+            "PATCH" => self.service.patch(url, json!({})).await,
+            "GET" => self.service.get(url).await,
+            "DELETE" => self.service.delete(url).await,
+            _ => unreachable!(),
+        }
     }
 }

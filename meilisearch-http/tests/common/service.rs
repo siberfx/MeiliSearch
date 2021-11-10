@@ -107,6 +107,28 @@ impl Service {
         (response, status_code)
     }
 
+    pub async fn patch(&self, url: impl AsRef<str>, body: Value) -> (Value, StatusCode) {
+        let app = test::init_service(create_app!(
+            &self.meilisearch,
+            true,
+            &self.options,
+            analytics::MockAnalytics::new(&self.options).0
+        ))
+        .await;
+
+        let mut req = test::TestRequest::patch().uri(url.as_ref()).set_json(&body);
+        if let Some(api_key) = &self.api_key {
+            req = req.insert_header(("X-MEILI-API-KEY", api_key.clone()));
+        }
+        let req = req.to_request();
+        let res = test::call_service(&app, req).await;
+        let status_code = res.status();
+
+        let body = test::read_body(res).await;
+        let response = serde_json::from_slice(&body).unwrap_or_default();
+        (response, status_code)
+    }
+
     pub async fn delete(&self, url: impl AsRef<str>) -> (Value, StatusCode) {
         let app = test::init_service(create_app!(
             &self.meilisearch,
