@@ -13,11 +13,13 @@ use crate::error::ResponseError;
 use crate::extractors::authentication::{policies::*, GuardedData};
 use crate::ApiKeys;
 
+mod api_key;
 mod dump;
 pub mod indexes;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(web::resource("/health").route(web::get().to(get_health)))
+        .service(web::scope("/keys").configure(api_key::configure))
         .service(web::scope("/dumps").configure(dump::configure))
         .service(web::resource("/keys").route(web::get().to(list_keys)))
         .service(web::resource("/stats").route(web::get().to(get_stats)))
