@@ -36,4 +36,9 @@ impl Server {
         let url = "/keys";
         self.service.get(url).await
     }
+
+    pub async fn delete_api_key(&self, key: impl AsRef<str>) -> (Value, StatusCode) {
+        let url = format!("/keys/{}", key.as_ref());
+        self.service.delete(url).await
+    }
 }
