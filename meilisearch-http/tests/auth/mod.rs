@@ -21,4 +21,9 @@ impl Server {
         let url = "/keys";
         self.service.post(url, content).await
     }
+
+    pub async fn get_api_key(&self, key: impl AsRef<str>) -> (Value, StatusCode) {
+        let url = format!("/keys/{}", key.as_ref());
+        self.service.get(url).await
+    }
 }
