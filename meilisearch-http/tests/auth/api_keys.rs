@@ -395,7 +395,7 @@ async fn get_api_key() {
     });
 
     assert_json_include!(actual: response, expected: expected_response);
-    assert_eq!(code, 201);
+    assert_eq!(code, 200);
 }
 
 #[actix_rt::test]
@@ -519,7 +519,7 @@ async fn list_api_keys() {
     });
 
     assert_json_include!(actual: response, expected: expected_response);
-    assert_eq!(code, 201);
+    assert_eq!(code, 200);
 }
 
 #[actix_rt::test]
@@ -975,7 +975,7 @@ async fn patch_api_key_expiration_date() {
     });
 
     assert_json_include!(actual: response, expected: expected);
-    assert_eq!(code, 201);
+    assert_eq!(code, 200);
 }
 
 #[actix_rt::test]
