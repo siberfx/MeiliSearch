@@ -2,7 +2,7 @@ use crate::common::Server;
 use maplit::hashmap;
 use once_cell::sync::Lazy;
 use serde_json::json;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 static AUTHORIZATIONS: Lazy<HashMap<(&'static str, &'static str), &'static str>> =
     Lazy::new(|| {
@@ -39,12 +39,15 @@ static AUTHORIZATIONS: Lazy<HashMap<(&'static str, &'static str), &'static str>>
             ("POST",    "/indexes/products/settings/sortableAttributes") =>    "settings.update",
             ("POST",    "/indexes/products/settings/stopWords") =>             "settings.update",
             ("POST",    "/indexes/products/settings/synonyms") =>              "settings.update",
-            ("GET",     "/indexes/products/stats") =>                          "stats",
-            ("GET",     "/stats") =>                                           "stats",
-            ("POST",    "/dumps") =>                                           "dumps",
-            ("GET",     "/dumps/0") =>                                         "dumps",
+            ("GET",     "/indexes/products/stats") =>                          "stats.get",
+            ("GET",     "/stats") =>                                           "stats.get",
+            ("POST",    "/dumps") =>                                           "dumps.create",
+            ("GET",     "/dumps/0") =>                                         "dumps.get",
         }
     });
+
+static ALL_ACTIONS: Lazy<HashSet<&'static str>> =
+    Lazy::new(|| AUTHORIZATIONS.values().cloned().collect());
 
 #[actix_rt::test]
 async fn error_access_expired_key() {
@@ -53,21 +56,7 @@ async fn error_access_expired_key() {
 
     let content = json!({
         "indexes": ["products"],
-        "actions": [
-            "search",
-            "documents.add",
-            "documents.get",
-            "documents.delete",
-            "indexes.add",
-            "indexes.get",
-            "indexes.update",
-            "indexes.delete",
-            "tasks.get",
-            "settings.get",
-            "settings.update",
-            "stats",
-            "dumps"
-        ],
+        "actions": ALL_ACTIONS.clone(),
         "expiresAt": "2020-11-13T00:00:00Z"
     });
 
@@ -90,5 +79,128 @@ async fn error_access_expired_key() {
 
         assert_eq!(response, expected_response);
         assert_eq!(code, 403);
+    }
+}
+
+#[actix_rt::test]
+async fn error_access_unauthorized_index() {
+    let mut server = Server::new_auth().await;
+    server.use_api_key("MASTER_KEY");
+
+    let content = json!({
+        "indexes": ["sales"],
+        "actions": ALL_ACTIONS.clone(),
+        "expiresAt": "2050-11-13T00:00:00Z"
+    });
+
+    let (response, code) = server.add_api_key(content).await;
+    assert_eq!(code, 201);
+    assert!(response["key"].is_string());
+
+    let key = response["key"].as_str().unwrap();
+    server.use_api_key(&key);
+
+    for (method, route) in AUTHORIZATIONS
+        .keys()
+        // filter `products` index routes
+        .filter(|(_, route)| route.starts_with("/indexes/products"))
+    {
+        let (response, code) = server.dummy_request(method, route).await;
+
+        let expected_response = json!({
+            "message": "The provided API key is invalid.",
+            "code": "invalid_api_key",
+            "type": "auth",
+            "link": "https://docs.meilisearch.com/errors#invalid_api_key"
+        });
+
+        assert_eq!(response, expected_response);
+        assert_eq!(code, 403);
+    }
+}
+
+#[actix_rt::test]
+async fn error_access_unauthorized_action() {
+    let mut server = Server::new_auth().await;
+    server.use_api_key("MASTER_KEY");
+
+    let content = json!({
+        "indexes": ["products"],
+        "actions": [],
+        "expiresAt": "2050-11-13T00:00:00Z"
+    });
+
+    let (response, code) = server.add_api_key(content).await;
+    assert_eq!(code, 201);
+    assert!(response["key"].is_string());
+
+    let key = response["key"].as_str().unwrap();
+    server.use_api_key(&key);
+
+    for ((method, route), action) in AUTHORIZATIONS.iter() {
+        server.use_api_key("MASTER_KEY");
+
+        // Patch API key letting all rights but the needed one.
+        let content = json!({
+            "actions": ALL_ACTIONS.iter().cloned().filter(|a| a != action).collect::<Vec<_>>(),
+        });
+        let (_, code) = server.patch_api_key(&key, content).await;
+        assert_eq!(code, 200);
+
+        server.use_api_key(&key);
+        let (response, code) = server.dummy_request(method, route).await;
+
+        let expected_response = json!({
+            "message": "The provided API key is invalid.",
+            "code": "invalid_api_key",
+            "type": "auth",
+            "link": "https://docs.meilisearch.com/errors#invalid_api_key"
+        });
+
+        assert_eq!(response, expected_response);
+        assert_eq!(code, 403);
+    }
+}
+
+#[actix_rt::test]
+async fn access_authorized_action() {
+    let mut server = Server::new_auth().await;
+    server.use_api_key("MASTER_KEY");
+
+    let content = json!({
+        "indexes": ["products"],
+        "actions": [],
+        "expiresAt": "2050-11-13T00:00:00Z"
+    });
+
+    let (response, code) = server.add_api_key(content).await;
+    assert_eq!(code, 201);
+    assert!(response["key"].is_string());
+
+    let key = response["key"].as_str().unwrap();
+    server.use_api_key(&key);
+
+    for ((method, route), action) in AUTHORIZATIONS.iter() {
+        server.use_api_key("MASTER_KEY");
+
+        // Patch API key letting only the needed action.
+        let content = json!({
+            "actions": [action],
+        });
+        let (_, code) = server.patch_api_key(&key, content).await;
+        assert_eq!(code, 200);
+
+        server.use_api_key(&key);
+        let (response, code) = server.dummy_request(method, route).await;
+
+        let unexpected_response = json!({
+            "message": "The provided API key is invalid.",
+            "code": "invalid_api_key",
+            "type": "auth",
+            "link": "https://docs.meilisearch.com/errors#invalid_api_key"
+        });
+
+        assert_ne!(response, unexpected_response);
+        assert_ne!(code, 403);
     }
 }
