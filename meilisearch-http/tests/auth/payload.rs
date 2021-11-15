@@ -48,31 +48,6 @@ async fn error_api_key_bad_content_types() {
         "https://docs.meilisearch.com/errors#invalid_content_type"
     );
 
-    // put
-    let req = test::TestRequest::put()
-        .uri("/keys/d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4")
-        .set_payload(content.to_string())
-        .insert_header(("content-type", "text/plain"))
-        .insert_header(("X-MEILI-API-KEY", "MASTER_KEY"))
-        .to_request();
-    let res = test::call_service(&app, req).await;
-    let status_code = res.status();
-    let body = test::read_body(res).await;
-    let response: Value = serde_json::from_slice(&body).unwrap_or_default();
-    assert_eq!(status_code, 415);
-    assert_eq!(
-        response["message"],
-        json!(
-            r#"The Content-Type `text/plain` is invalid. Accepted values for the Content-Type header are: `application/json`"#
-        )
-    );
-    assert_eq!(response["code"], "invalid_content_type");
-    assert_eq!(response["type"], "invalid_request");
-    assert_eq!(
-        response["link"],
-        "https://docs.meilisearch.com/errors#invalid_content_type"
-    );
-
     // patch
     let req = test::TestRequest::patch()
         .uri("/keys/d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4")
@@ -122,31 +97,6 @@ async fn error_api_key_empty_content_types() {
     // post
     let req = test::TestRequest::post()
         .uri("/keys")
-        .set_payload(content.to_string())
-        .insert_header(("content-type", ""))
-        .insert_header(("X-MEILI-API-KEY", "MASTER_KEY"))
-        .to_request();
-    let res = test::call_service(&app, req).await;
-    let status_code = res.status();
-    let body = test::read_body(res).await;
-    let response: Value = serde_json::from_slice(&body).unwrap_or_default();
-    assert_eq!(status_code, 415);
-    assert_eq!(
-        response["message"],
-        json!(
-            r#"The Content-Type `` is invalid. Accepted values for the Content-Type header are: `application/json`"#
-        )
-    );
-    assert_eq!(response["code"], "invalid_content_type");
-    assert_eq!(response["type"], "invalid_request");
-    assert_eq!(
-        response["link"],
-        "https://docs.meilisearch.com/errors#invalid_content_type"
-    );
-
-    // put
-    let req = test::TestRequest::put()
-        .uri("/keys/d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4")
         .set_payload(content.to_string())
         .insert_header(("content-type", ""))
         .insert_header(("X-MEILI-API-KEY", "MASTER_KEY"))
@@ -239,30 +189,6 @@ async fn error_api_key_missing_content_types() {
         "https://docs.meilisearch.com/errors#missing_content_type"
     );
 
-    // put
-    let req = test::TestRequest::put()
-        .uri("/keys/d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4")
-        .set_payload(content.to_string())
-        .insert_header(("X-MEILI-API-KEY", "MASTER_KEY"))
-        .to_request();
-    let res = test::call_service(&app, req).await;
-    let status_code = res.status();
-    let body = test::read_body(res).await;
-    let response: Value = serde_json::from_slice(&body).unwrap_or_default();
-    assert_eq!(status_code, 415);
-    assert_eq!(
-        response["message"],
-        json!(
-            r#"A Content-Type header is missing. Accepted values for the Content-Type header are: `application/json`"#
-        )
-    );
-    assert_eq!(response["code"], "missing_content_type");
-    assert_eq!(response["type"], "invalid_request");
-    assert_eq!(
-        response["link"],
-        "https://docs.meilisearch.com/errors#missing_content_type"
-    );
-
     // patch
     let req = test::TestRequest::patch()
         .uri("/keys/d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4")
@@ -321,25 +247,6 @@ async fn error_api_key_empty_payload() {
         "https://docs.meilisearch.com/errors#missing_payload"
     );
 
-    // put
-    let req = test::TestRequest::put()
-        .uri("/keys/d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4")
-        .set_payload(content)
-        .insert_header(("X-MEILI-API-KEY", "MASTER_KEY"))
-        .to_request();
-    let res = test::call_service(&app, req).await;
-    let status_code = res.status();
-    let body = test::read_body(res).await;
-    let response: Value = serde_json::from_slice(&body).unwrap_or_default();
-    assert_eq!(status_code, 400);
-    assert_eq!(response["message"], json!(r#"A json payload is missing."#));
-    assert_eq!(response["code"], "missing_payload");
-    assert_eq!(response["type"], "invalid_request");
-    assert_eq!(
-        response["link"],
-        "https://docs.meilisearch.com/errors#missing_payload"
-    );
-
     // patch
     let req = test::TestRequest::patch()
         .uri("/keys/d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4")
@@ -377,28 +284,6 @@ async fn error_api_key_malformed_payload() {
     // post
     let req = test::TestRequest::post()
         .uri("/keys")
-        .set_payload(content)
-        .insert_header(("X-MEILI-API-KEY", "MASTER_KEY"))
-        .to_request();
-    let res = test::call_service(&app, req).await;
-    let status_code = res.status();
-    let body = test::read_body(res).await;
-    let response: Value = serde_json::from_slice(&body).unwrap_or_default();
-    assert_eq!(status_code, 400);
-    assert_eq!(
-        response["message"],
-        json!(r#"The json payload provided is malformed. :syntaxErrorHelper."#)
-    );
-    assert_eq!(response["code"], "malformed_payload");
-    assert_eq!(response["type"], "invalid_request");
-    assert_eq!(
-        response["link"],
-        "https://docs.meilisearch.com/errors#malformed_payload"
-    );
-
-    // put
-    let req = test::TestRequest::put()
-        .uri("/keys/d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4")
         .set_payload(content)
         .insert_header(("X-MEILI-API-KEY", "MASTER_KEY"))
         .to_request();

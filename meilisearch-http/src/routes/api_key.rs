@@ -12,7 +12,6 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(web::resource("").route(web::post().to(create_api_key)))
         .service(web::resource("").route(web::get().to(list_api_keys)))
         .service(web::resource("/{api_key}").route(web::get().to(get_api_key)))
-        .service(web::resource("/{api_key}").route(web::put().to(put_api_key)))
         .service(web::resource("/{api_key}").route(web::patch().to(patch_api_key)))
         .service(web::resource("/{api_key}").route(web::delete().to(delete_api_key)));
 }
@@ -49,17 +48,6 @@ pub async fn get_api_key(
     analytics: web::Data<dyn Analytics>,
 ) -> Result<HttpResponse, ResponseError> {
     let res = json!("get_api_key unimplemented");
-
-    debug!("returns: {:?}", res);
-    Ok(HttpResponse::Accepted().json(res))
-}
-
-pub async fn put_api_key(
-    meilisearch: GuardedData<Private, MeiliSearch>,
-    req: HttpRequest,
-    analytics: web::Data<dyn Analytics>,
-) -> Result<HttpResponse, ResponseError> {
-    let res = json!("put_api_key unimplemented");
 
     debug!("returns: {:?}", res);
     Ok(HttpResponse::Accepted().json(res))

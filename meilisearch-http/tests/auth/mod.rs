@@ -28,11 +28,6 @@ impl Server {
         self.service.get(url).await
     }
 
-    pub async fn put_api_key(&self, key: impl AsRef<str>, content: Value) -> (Value, StatusCode) {
-        let url = format!("/keys/{}", key.as_ref());
-        self.service.put(url, content).await
-    }
-
     pub async fn patch_api_key(&self, key: impl AsRef<str>, content: Value) -> (Value, StatusCode) {
         let url = format!("/keys/{}", key.as_ref());
         self.service.patch(url, content).await
