@@ -204,3 +204,41 @@ async fn access_authorized_action() {
         assert_ne!(code, 403);
     }
 }
+
+#[actix_rt::test]
+async fn access_authorized_stats() {
+    let mut server = Server::new_auth().await;
+    server.use_api_key("MASTER_KEY");
+
+    // create index `test`
+    let index = server.index("test");
+    let (_, code) = index.create(Some("id")).await;
+    assert_eq!(code, 201);
+    // create index `products`
+    let index = server.index("products");
+    let (_, code) = index.create(Some("product_id")).await;
+    assert_eq!(code, 201);
+
+    // create key with access on `products` index only.
+    let content = json!({
+        "indexes": ["products"],
+        "actions": ALL_ACTIONS.clone(),
+        "expiresAt": "2050-11-13T00:00:00Z"
+    });
+    let (response, code) = server.add_api_key(content).await;
+    assert_eq!(code, 201);
+    assert!(response["key"].is_string());
+
+    // use created key.
+    let key = response["key"].as_str().unwrap();
+    server.use_api_key(&key);
+
+    let (response, code) = server.stats().await;
+    assert_eq!(code, 200);
+
+    // key should have access on `products` index.
+    assert!(response["indexes"].get("products").is_some());
+
+    // key should not have access on `test` index.
+    assert!(response["indexes"].get("test").is_none());
+}
