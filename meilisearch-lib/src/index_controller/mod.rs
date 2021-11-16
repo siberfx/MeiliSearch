@@ -36,6 +36,7 @@ use self::index_resolver::IndexResolver;
 use self::updates::status::UpdateStatus;
 use self::updates::UpdateMsg;
 
+mod auth_resolver;
 mod dump_actor;
 pub mod error;
 mod index_resolver;
