@@ -1,12 +1,55 @@
 mod auth_store;
-mod error;
-
-use error::{AuthResolverError, Result};
-use rand::Rng;
+pub mod error;
 
 use chrono::{DateTime, Utc};
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_value, Value};
+use std::path::Path;
+
+use auth_store::HeedAuthStore;
+use error::{AuthResolverError, Result};
+
+pub struct AuthResolver {
+    store: HeedAuthStore,
+}
+
+impl AuthResolver {
+    pub fn new(path: impl AsRef<Path>) -> Result<Self> {
+        Ok(Self {
+            store: HeedAuthStore::new(path)?,
+        })
+    }
+
+    pub fn create_key(&self, value: Value) -> Result<Key> {
+        let key = Key::create_from_value(value)?;
+        self.store.put_api_key(key)
+    }
+
+    pub fn update_key(&self, key: impl AsRef<str>, value: Value) -> Result<Key> {
+        let mut key = self.get_key(key)?;
+        key.update_from_value(value)?;
+        self.store.put_api_key(key)
+    }
+
+    pub fn get_key(&self, key: impl AsRef<str>) -> Result<Key> {
+        self.store
+            .get_api_key(&key)?
+            .ok_or_else(|| AuthResolverError::ApiKeyNotFound(key.as_ref().to_string()))
+    }
+
+    pub fn list_keys(&self) -> Result<Vec<Key>> {
+        self.store.list_api_keys()
+    }
+
+    pub fn delete_key(&self, key: impl AsRef<str>) -> Result<()> {
+        if self.store.delete_api_key(&key)? {
+            Ok(())
+        } else {
+            Err(AuthResolverError::ApiKeyNotFound(key.as_ref().to_string()))
+        }
+    }
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -37,7 +80,7 @@ impl Key {
             .get("actions")
             .map(|act| {
                 from_value(act.clone())
-                    .map_err(|_| AuthResolverError::InvalidApiKeyAction(act.clone()))
+                    .map_err(|_| AuthResolverError::InvalidApiKeyActions(act.clone()))
             })
             .ok_or(AuthResolverError::MissingParameter("actions"))??;
 
@@ -80,7 +123,7 @@ impl Key {
 
         if let Some(act) = value.get("actions") {
             let act = from_value(act.clone())
-                .map_err(|_| AuthResolverError::InvalidApiKeyAction(act.clone()));
+                .map_err(|_| AuthResolverError::InvalidApiKeyActions(act.clone()));
             self.actions = act?;
         }
 
@@ -125,7 +168,7 @@ pub enum Action {
     #[serde(rename = "settings.get")]
     SettingsGet,
     #[serde(rename = "settings.update")]
-    SettingsUpdate,
+    SettingsReset,
     #[serde(rename = "stats.get")]
     StatsGet,
     #[serde(rename = "dumps.create")]

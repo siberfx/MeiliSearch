@@ -4,7 +4,7 @@ use std::fs::{create_dir_all, File};
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 
-use heed::types::{ByteSlice, OwnedType, Str};
+use heed::types::{DecodeIgnore, Str};
 use heed::{CompactionOption, Database, Env, EnvOpenOptions};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -34,17 +34,35 @@ impl HeedAuthStore {
         Ok(Self { env, keys })
     }
 
-    pub fn put_key(&self, key: Key) -> Result<()> {
+    pub fn put_api_key(&self, key: Key) -> Result<Key> {
         let mut wtxn = self.env.write_txn()?;
-        self.keys.put(&mut wtxn, &key.key, &key);
+        self.keys.put(&mut wtxn, &key.key, &key)?;
         wtxn.commit()?;
 
-        Ok(())
+        Ok(key)
     }
 
-    pub fn get_key(&self, key: impl AsRef<str>) -> Result<Option<Key>> {
-        let mut rtxn = self.env.read_txn()?;
-        self.keys.get(&mut rtxn, key.as_ref()).map_err(|e| e.into())
+    pub fn get_api_key(&self, key: impl AsRef<str>) -> Result<Option<Key>> {
+        let rtxn = self.env.read_txn()?;
+        self.keys.get(&rtxn, key.as_ref()).map_err(|e| e.into())
+    }
+
+    pub fn delete_api_key(&self, key: impl AsRef<str>) -> Result<bool> {
+        let mut wtxn = self.env.write_txn()?;
+        let existing = self.keys.delete(&mut wtxn, key.as_ref())?;
+        wtxn.commit()?;
+
+        Ok(existing)
+    }
+
+    pub fn list_api_keys(&self) -> Result<Vec<Key>> {
+        let mut list = Vec::new();
+        let rtxn = self.env.read_txn()?;
+        for result in self.keys.remap_key_type::<DecodeIgnore>().iter(&rtxn)? {
+            let (_, content) = result?;
+            list.push(content);
+        }
+        Ok(list)
     }
 }
 

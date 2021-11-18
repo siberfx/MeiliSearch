@@ -6,6 +6,7 @@ use tokio::task::JoinError;
 
 use crate::index::error::IndexError;
 
+use super::auth_resolver::error::AuthResolverError;
 use super::dump_actor::error::DumpActorError;
 use super::index_resolver::error::IndexResolverError;
 use super::updates::error::UpdateLoopError;
@@ -18,6 +19,8 @@ pub enum IndexControllerError {
     MissingUid,
     #[error("{0}")]
     IndexResolver(#[from] IndexResolverError),
+    #[error("{0}")]
+    AuthResolver(#[from] AuthResolverError),
     #[error("{0}")]
     UpdateLoop(#[from] UpdateLoopError),
     #[error("{0}")]
@@ -35,6 +38,7 @@ impl ErrorCode for IndexControllerError {
         match self {
             IndexControllerError::MissingUid => Code::BadRequest,
             IndexControllerError::IndexResolver(e) => e.error_code(),
+            IndexControllerError::AuthResolver(e) => e.error_code(),
             IndexControllerError::UpdateLoop(e) => e.error_code(),
             IndexControllerError::DumpActor(e) => e.error_code(),
             IndexControllerError::IndexError(e) => e.error_code(),

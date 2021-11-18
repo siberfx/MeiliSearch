@@ -22,9 +22,9 @@ async fn add_valid_api_key() {
             "tasks.get",
             "settings.get",
             "settings.update",
-            "settings.reset",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -51,9 +51,9 @@ async fn add_valid_api_key() {
             "tasks.get",
             "settings.get",
             "settings.update",
-            "settings.reset",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -216,7 +216,7 @@ async fn error_add_api_key_invalid_parameters_description() {
     server.use_api_key("MASTER_KEY");
 
     let content = json!({
-        "description": {"name": "products"},
+        "description": {"name":"products"},
         "indexes": ["products"],
         "actions": [
             "documents.add"
@@ -226,7 +226,7 @@ async fn error_add_api_key_invalid_parameters_description() {
     let (response, code) = server.add_api_key(content).await;
 
     let expected_response = json!({
-        "message": r#"description field value `{"name": "products"}` is invalid. It should be a string or specified as a null value."#,
+        "message": r#"description field value `{"name":"products"}` is invalid. It should be a string or specified as a null value."#,
         "code": "invalid_api_key_description",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#invalid_api_key_description"
@@ -243,7 +243,7 @@ async fn error_add_api_key_invalid_parameters_indexes() {
 
     let content = json!({
         "description": "Indexing API key",
-        "indexes": {"name": "products"},
+        "indexes": {"name":"products"},
         "actions": [
             "documents.add"
         ],
@@ -252,7 +252,7 @@ async fn error_add_api_key_invalid_parameters_indexes() {
     let (response, code) = server.add_api_key(content).await;
 
     let expected_response = json!({
-        "message": r#"indexes field value `{"name": "products"}` is invalid. It should be an array of string representing index names."#,
+        "message": r#"indexes field value `{"name":"products"}` is invalid. It should be an array of string representing index names."#,
         "code": "invalid_api_key_indexes",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#invalid_api_key_indexes"
@@ -270,13 +270,13 @@ async fn error_add_api_key_invalid_parameters_actions() {
     let content = json!({
         "description": "Indexing API key",
         "indexes": ["products"],
-        "actions": {"name": "products"},
+        "actions": {"name":"products"},
         "expiresAt": "2050-11-13T00:00:00Z"
     });
     let (response, code) = server.add_api_key(content).await;
 
     let expected_response = json!({
-        "message": r#"actions field value `{"name": "products"}` is invalid. It should be an array of string representing action names."#,
+        "message": r#"actions field value `{"name":"products"}` is invalid. It should be an array of string representing action names."#,
         "code": "invalid_api_key_actions",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#invalid_api_key_actions"
@@ -317,12 +317,12 @@ async fn error_add_api_key_invalid_parameters_expires_at() {
         "actions": [
             "documents.add"
         ],
-        "expiresAt": {"name": "products"}
+        "expiresAt": {"name":"products"}
     });
     let (response, code) = server.add_api_key(content).await;
 
     let expected_response = json!({
-        "message": r#"expiresAt field value `{"name": "products"}` is invalid. It should be in ISO-8601 format to represents a date or datetime in the future or specified as a null value. e.g. 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM:SS'."#,
+        "message": r#"expiresAt field value `{"name":"products"}` is invalid. It should be in ISO-8601 format to represents a date or datetime in the future or specified as a null value. e.g. 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM:SS'."#,
         "code": "invalid_api_key_expires_at",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#invalid_api_key_expires_at"
@@ -352,9 +352,9 @@ async fn get_api_key() {
             "tasks.get",
             "settings.get",
             "settings.update",
-            "settings.reset",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -387,9 +387,9 @@ async fn get_api_key() {
             "tasks.get",
             "settings.get",
             "settings.update",
-            "settings.reset",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -447,7 +447,7 @@ async fn error_get_api_key_not_found() {
         .await;
 
     let expected_response = json!({
-        "message": "Api key `d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4` not found.",
+        "message": "API key `d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4` not found.",
         "code": "api_key_not_found",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#api_key_not_found"
@@ -477,9 +477,9 @@ async fn list_api_keys() {
             "tasks.get",
             "settings.get",
             "settings.update",
-            "settings.reset",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -511,9 +511,9 @@ async fn list_api_keys() {
             "tasks.get",
             "settings.get",
             "settings.update",
-            "settings.reset",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -577,9 +577,9 @@ async fn delete_api_key() {
             "tasks.get",
             "settings.get",
             "settings.update",
-            "settings.reset",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -648,7 +648,7 @@ async fn error_delete_api_key_not_found() {
         .await;
 
     let expected_response = json!({
-        "message": "Api key `d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4` not found.",
+        "message": "API key `d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4` not found.",
         "code": "api_key_not_found",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#api_key_not_found"
@@ -674,8 +674,9 @@ async fn patch_api_key_description() {
             "indexes.get",
             "indexes.update",
             "indexes.delete",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -713,8 +714,9 @@ async fn patch_api_key_description() {
             "indexes.get",
             "indexes.update",
             "indexes.delete",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -742,8 +744,9 @@ async fn patch_api_key_description() {
             "indexes.get",
             "indexes.update",
             "indexes.delete",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -770,8 +773,9 @@ async fn patch_api_key_description() {
             "indexes.get",
             "indexes.update",
             "indexes.delete",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -797,8 +801,9 @@ async fn patch_api_key_indexes() {
             "indexes.get",
             "indexes.update",
             "indexes.delete",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -835,8 +840,9 @@ async fn patch_api_key_indexes() {
             "indexes.get",
             "indexes.update",
             "indexes.delete",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -862,8 +868,9 @@ async fn patch_api_key_actions() {
             "indexes.get",
             "indexes.update",
             "indexes.delete",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2050-11-13T00:00:00Z"
     });
@@ -930,8 +937,9 @@ async fn patch_api_key_expiration_date() {
             "indexes.get",
             "indexes.update",
             "indexes.delete",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "205-11-13T00:00:00Z"
     });
@@ -968,8 +976,9 @@ async fn patch_api_key_expiration_date() {
             "indexes.get",
             "indexes.update",
             "indexes.delete",
-            "stats",
-            "dumps"
+            "stats.get",
+            "dumps.create",
+            "dumps.get"
         ],
         "expiresAt": "2055-11-13T00:00:00Z"
     });
@@ -1036,7 +1045,7 @@ async fn error_patch_api_key_not_found() {
         .await;
 
     let expected_response = json!({
-        "message": "Api key `d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4` not found.",
+        "message": "API key `d0552b41536279a0ad88bd595327b96f01176a60c2243e906c52ac02375f9bc4` not found.",
         "code": "api_key_not_found",
         "type": "invalid_request",
         "link": "https://docs.meilisearch.com/errors#api_key_not_found"
