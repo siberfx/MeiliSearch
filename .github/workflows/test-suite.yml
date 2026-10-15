@@ -34,7 +34,7 @@ jobs:
       - name: check free space after
         run: df -h
       - name: Cache dependencies
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
           key: ${{ matrix.features }}
       - name: Run cargo build without any default features
@@ -54,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Cache dependencies
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - name: Run cargo build without any default features
         run: cargo build --locked --no-default-features --all
       - name: Run cargo test
@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Cache dependencies
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - name: Run cargo build without any default features
         run: cargo build --locked --no-default-features --all
       - name: Run cargo test
@@ -150,7 +150,7 @@ jobs:
       - name: check free space after
         run: df -h
       - name: Cache dependencies
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - name: Run cargo test
         run: cargo test --locked --all
 
@@ -188,7 +188,7 @@ jobs:
           sudo rm -rf "/usr/local/lib/android" || true
           sudo rm -rf "/usr/local/share/boost" || true
       - name: Cache dependencies
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - name: Build
         run: cargo build --release --locked --target x86_64-unknown-linux-gnu
 
@@ -207,7 +207,7 @@ jobs:
           sudo rm -rf "/usr/local/lib/android" || true
           sudo rm -rf "/usr/local/share/boost" || true
       - name: Cache dependencies
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - name: Run cargo clippy
         run: cargo clippy --all-targets ${{ matrix.features }} -- --deny warnings -D clippy::todo
 
@@ -223,7 +223,7 @@ jobs:
           sudo rm -rf "/usr/local/lib/android" || true
           sudo rm -rf "/usr/local/share/boost" || true
       - name: Cache dependencies
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - name: Run cargo fmt
         run: cargo fmt --all -- --check
 
@@ -241,7 +241,7 @@ jobs:
           sudo rm -rf "/usr/local/lib/android" || true
           sudo rm -rf "/usr/local/share/boost" || true
       - name: Cache dependencies
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - name: Run declarative tests
         run: |
           cargo xtask test workloads/tests/*.json
